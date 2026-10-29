@@ -33,7 +33,7 @@ class PluginConfigTest(unittest.TestCase):
         self.assertNotIn("args", server)
         self.assertNotIn("headers", server)
         self.assertEqual(server["url"], "${POKITNOTE_API_BASE:-https://pokitnote.com/mcp}")
-        self.assertEqual(server["oauth"], {"scopes": "notes"})
+        self.assertEqual(server["oauth"], {"scopes": "notes", "clientId": "claude"})
         text = json.dumps(raw)
         self.assertNotIn("grok-bot", text)
         self.assertNotIn("python", text.lower())

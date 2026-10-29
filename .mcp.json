@@ -3,7 +3,8 @@
     "type": "http",
     "url": "${POKITNOTE_API_BASE:-https://pokitnote.com/mcp}",
     "oauth": {
-      "scopes": "notes"
+      "scopes": "notes",
+      "clientId": "claude"
     }
   }
 }

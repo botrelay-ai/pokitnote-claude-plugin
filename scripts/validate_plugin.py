@@ -57,7 +57,7 @@ PLUGIN_ENTRY_KEYS = {
     "strict",
 }
 MCP_SERVER_KEYS = {"type", "url", "oauth"}
-OAUTH_KEYS = {"scopes"}
+OAUTH_KEYS = {"scopes", "clientId"}
 KEBAB = re.compile(r"^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$")
 SKILL_NAME = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 SEMVER = re.compile(
