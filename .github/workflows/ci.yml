@@ -29,8 +29,17 @@ jobs:
       - name: Validate manifests and skill frontmatter
         run: python3 scripts/validate_plugin.py
 
+      - name: Check routine-prompt.md matches the skills
+        run: python3 scripts/build_routine_prompt.py --check
+
       - name: Run plugin tests
         run: python3 -m unittest discover -s tests -v
+
+      - name: Validate with Claude Code
+        run: |
+          set -euo pipefail
+          npm install --prefix "${RUNNER_TEMP}/claude" --no-save @anthropic-ai/claude-code
+          "${RUNNER_TEMP}/claude/node_modules/.bin/claude" plugin validate . --strict
 
       - name: Lint Python with Ruff
         run: |

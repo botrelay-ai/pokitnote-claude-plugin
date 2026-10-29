@@ -1,6 +1,9 @@
 {
   "pokitnote": {
     "type": "http",
-    "url": "${POKITNOTE_API_BASE:-https://pokitnote.com/mcp}"
+    "url": "${POKITNOTE_API_BASE:-https://pokitnote.com/mcp}",
+    "oauth": {
+      "scopes": "notes"
+    }
   }
 }
