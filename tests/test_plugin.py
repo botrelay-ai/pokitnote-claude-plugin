@@ -32,7 +32,7 @@ class PluginConfigTest(unittest.TestCase):
         self.assertNotIn("command", server)
         self.assertNotIn("args", server)
         self.assertNotIn("headers", server)
-        self.assertEqual(server["url"], "${POKITNOTE_API_BASE:-https://pokitnote.com/mcp}")
+        self.assertEqual(server["url"], "https://pokitnote.com/mcp")
         self.assertEqual(server["oauth"], {"scopes": "notes", "clientId": "claude"})
         text = json.dumps(raw)
         self.assertNotIn("grok-bot", text)
@@ -98,8 +98,6 @@ class PluginConfigTest(unittest.TestCase):
             self.assertIn("https://pokitnote.com/mcp", text)
             self.assertNotIn("https://pokitnote.com/mcp/", text)
             self.assertIn("no trailing slash", text)
-            self.assertIn("Leave Pokit Note address unset", text)
-            self.assertIn("POKITNOTE_API_BASE", text)
 
     def test_shared_link_goes_in_item_note(self):
         for relative in ("skills/pokit-note-connected-assistant/SKILL.md", "routine-prompt.md"):

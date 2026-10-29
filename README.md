@@ -48,7 +48,7 @@ A routine accepts up to 30 runs an hour, and your account up to 100, and each ru
 
 Leave Pokit Note address unset for normal use. The connector uses https://pokitnote.com/mcp with no trailing slash.
 
-The address is the optional `POKITNOTE_API_BASE` environment variable. Set it before you start Claude Code only when you are pointing the connector at a different Pokit Note server, and omit any trailing slash.
+The connector address is https://pokitnote.com/mcp, with no trailing slash. To point the connector at a different Pokit Note server, such as stage, edit the address in Claude's connector settings and omit any trailing slash.
 
 ## Subscription
 
