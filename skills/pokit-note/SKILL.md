@@ -68,4 +68,4 @@ Set these only when the person asks, or when their request clearly includes them
 ## Connection
 
 - Do not ask for, copy, or replace the key saved by the Pokit Note app on the iPhone.
-- The connector address is https://pokitnote.com/mcp with no trailing slash. Use a different address only when the person gives one, and omit any trailing slash.
+- Leave Pokit Note address unset for normal use. That address is the optional `POKITNOTE_API_BASE` environment variable, and without it the connector uses https://pokitnote.com/mcp with no trailing slash. Use a different address only when the person gives one, and omit any trailing slash.
