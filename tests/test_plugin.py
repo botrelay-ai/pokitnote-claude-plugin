@@ -7,7 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILLS = ("skills/pokit-note/SKILL.md", "skills/pokit-note-connected-assistant/SKILL.md")
-USER_FACING = (*SKILLS, "commands/sign-in.md", "README.md", "routine-prompt.md")
+USER_FACING = (*SKILLS, "commands/pn-sign-in.md", "README.md", "routine-prompt.md")
 
 
 def load_script(name):

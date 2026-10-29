@@ -21,7 +21,7 @@ Pokit Note is currently only available for iPhone, and only in the US. Android s
    /plugin install pokit-note@pokit-note
    ```
 
-2. **Sign in.** Run `/mcp`, choose **pokitnote**, and choose **Authenticate**. The Pokit Note website opens in your default browser. If you don't already have an account, create one, then sign in and choose **Approve**. You can also run `/pokit-note:sign-in` for these steps.
+2. **Sign in.** Run `/mcp`, choose **pokitnote**, and choose **Authenticate**. The Pokit Note website opens in your default browser. If you don't already have an account, create one, then sign in and choose **Approve**. You can also run `/pn-sign-in` for these steps.
 
 3. **Try it.** Ask Claude something like "What's on my grocery list?" or "Add oat milk to my shopping list."
 
