@@ -38,7 +38,7 @@ jobs:
       - name: Validate with Claude Code
         run: |
           set -euo pipefail
-          npm install --prefix "${RUNNER_TEMP}/claude" --no-save @anthropic-ai/claude-code
+          npm install --prefix "${RUNNER_TEMP}/claude" --no-save @anthropic-ai/claude-code@2.1.312
           "${RUNNER_TEMP}/claude/node_modules/.bin/claude" plugin validate . --strict
 
       - name: Lint Python with Ruff
