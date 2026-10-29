@@ -8,7 +8,6 @@
   },
   "homepage": "https://github.com/botrelay-ai/pokitnote-claude-plugin",
   "repository": "https://github.com/botrelay-ai/pokitnote-claude-plugin",
-  "privacyPolicyUrl": "https://pokitnote.com/privacy",
   "license": "MIT",
   "keywords": [
     "pokit-note",
@@ -16,6 +15,5 @@
     "lists",
     "recipes",
     "groceries"
-  ],
-  "icon": "./assets/logo.png"
+  ]
 }
