@@ -1,5 +1,6 @@
 {
   "name": "pokit-note",
+  "displayName": "Pokit Note",
   "version": "0.6.0",
   "description": "To-do lists, shopping, notes, recipes and more. Collaborate with Claude from your phone, and power through your day.",
   "author": {
@@ -15,5 +16,6 @@
     "lists",
     "recipes",
     "groceries"
-  ]
+  ],
+  "icon": "./assets/logo.png"
 }

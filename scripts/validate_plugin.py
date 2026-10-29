@@ -29,6 +29,8 @@ PLUGIN_KEYS = {
     "license",
     "keywords",
     "privacyPolicyUrl",
+    "displayName",
+    "icon",
     "commands",
     "agents",
     "skills",
