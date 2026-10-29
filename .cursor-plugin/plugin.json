@@ -1,0 +1,28 @@
+{
+  "name": "pokit-note",
+  "displayName": "Pokit Note",
+  "version": "0.5.2",
+  "description": "To-do lists, shopping, notes, recipes and more. Collaborate with Grok Bot from your phone, and power through your day.",
+  "author": {
+    "name": "BotRelay LLC"
+  },
+  "repository": "https://github.com/botrelay-ai/pokitnote-cursor-plugin",
+  "homepage": "https://github.com/botrelay-ai/pokitnote-cursor-plugin",
+  "license": "MIT",
+  "logo": "assets/logo.png",
+  "keywords": ["pokit-note", "notes", "lists", "recipes"],
+  "skills": "./skills/",
+  "commands": "./commands/",
+  "mcpServers": "./mcp.json",
+  "variables": {
+    "type": "object",
+    "properties": {
+      "POKITNOTE_API_BASE": {
+        "type": "string",
+        "title": "Pokit Note address",
+        "description": "Optional MCP URL, including /mcp and no trailing slash. Defaults to https://pokitnote.com/mcp. You do not need to set this.",
+        "default": "https://pokitnote.com/mcp"
+      }
+    }
+  }
+}
