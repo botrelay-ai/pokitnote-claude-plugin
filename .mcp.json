@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "pokitnote": {
+      "type": "http",
+      "url": "${POKITNOTE_API_BASE:-https://pokitnote.com/mcp}"
+    }
+  }
+}

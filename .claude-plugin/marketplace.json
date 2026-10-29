@@ -1,0 +1,14 @@
+{
+  "name": "pokit-note",
+  "description": "Collaborate with Claude from your phone on to-do lists, shopping, notes, recipes and more.",
+  "owner": {
+    "name": "BotRelay LLC"
+  },
+  "plugins": [
+    {
+      "name": "pokit-note",
+      "source": "./",
+      "description": "Collaborate with Claude from your phone on to-do lists, shopping, notes, recipes and more."
+    }
+  ]
+}

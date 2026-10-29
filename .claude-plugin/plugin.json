@@ -1,0 +1,19 @@
+{
+  "name": "pokit-note",
+  "version": "0.6.0",
+  "description": "To-do lists, shopping, notes, recipes and more. Collaborate with Claude from your phone, and power through your day.",
+  "author": {
+    "name": "BotRelay LLC"
+  },
+  "homepage": "https://github.com/botrelay-ai/pokitnote-claude-plugin",
+  "repository": "https://github.com/botrelay-ai/pokitnote-claude-plugin",
+  "privacyPolicyUrl": "https://pokitnote.com/privacy",
+  "license": "MIT",
+  "keywords": [
+    "pokit-note",
+    "notes",
+    "lists",
+    "recipes",
+    "groceries"
+  ]
+}

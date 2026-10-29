@@ -1,7 +1,9 @@
-"""Validate Cursor plugin manifests, MCP config, and skill frontmatter.
+"""Validate the Claude plugin manifests, MCP config, and skill frontmatter.
 
 The checks are structural. They do not read README.md, so wording edits
-there do not fail this script.
+there do not fail this script. `claude plugin validate` checks the manifests
+against Claude Code's own schema; this script adds the Pokit Note rules on
+top, such as the production server URL.
 """
 
 from __future__ import annotations
@@ -14,34 +16,46 @@ from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 
-# Field sets follow the Cursor plugin and marketplace schemas published in
-# github.com/cursor/plugins (schemas/plugin.schema.json and marketplace.schema.json).
-# Marketplace `owner` is required by the Cursor plugins reference.
+# Fields from the Claude Code plugin and marketplace references. Anything else
+# is flagged so a typo or a leftover Cursor field (displayName, logo,
+# variables) does not slip through.
 PLUGIN_KEYS = {
     "name",
-    "displayName",
-    "description",
     "version",
-    "minClientVersions",
+    "description",
     "author",
-    "publisher",
     "homepage",
     "repository",
     "license",
-    "logo",
     "keywords",
-    "category",
-    "tags",
+    "privacyPolicyUrl",
     "commands",
     "agents",
     "skills",
-    "rules",
     "hooks",
-    "variables",
     "mcpServers",
+    "lspServers",
+    "outputStyles",
+    "userConfig",
 }
-MARKETPLACE_KEYS = {"name", "owner", "metadata", "plugins"}
-PLUGIN_ENTRY_KEYS = {"name", "source", "description", "minClientVersions"}
+PATH_FIELDS = ("commands", "agents", "skills", "hooks", "mcpServers", "lspServers", "outputStyles")
+MARKETPLACE_KEYS = {"$schema", "name", "description", "owner", "metadata", "plugins"}
+PLUGIN_ENTRY_KEYS = {
+    "name",
+    "source",
+    "description",
+    "version",
+    "author",
+    "homepage",
+    "repository",
+    "license",
+    "keywords",
+    "category",
+    "tags",
+    "strict",
+}
+MCP_SERVER_KEYS = {"type", "url", "oauth"}
+OAUTH_KEYS = {"scopes"}
 KEBAB = re.compile(r"^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$")
 SKILL_NAME = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 SEMVER = re.compile(
@@ -51,6 +65,7 @@ SEMVER = re.compile(
 )
 SECRET_KEYS = {
     "client_secret",
+    "clientsecret",
     "access_token",
     "refresh_token",
     "api_key",
@@ -58,10 +73,13 @@ SECRET_KEYS = {
     "password",
     "secret",
     "token",
+    "authorization",
 }
 PRODUCTION_HOST = "pokitnote.com"
 PRODUCTION_MCP_URL = "https://pokitnote.com/mcp"
-PLACEHOLDER = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*)\}")
+# ${VAR} or ${VAR:-default}. A bare ${VAR} with no default fails to load when
+# the variable is unset, so the server URL must always carry a default.
+PLACEHOLDER = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*)(?::-([^}]*))?\}")
 
 
 class Report:
@@ -148,121 +166,99 @@ def check_https_url(value: object, label: str, report: Report) -> None:
         report.error(f"{label}: expected an https URL")
 
 
+def check_author(value: object, label: str, report: Report) -> None:
+    author = require_object(value, label, report)
+    if author is None:
+        return
+    unknown_keys(author, {"name", "email", "url"}, label, report)
+    if not isinstance(author.get("name"), str) or not author["name"].strip():
+        report.error(f"{label}: missing required field name")
+
+
 def validate_plugin(report: Report) -> dict[str, object] | None:
-    path = ROOT / ".cursor-plugin" / "plugin.json"
-    data = require_object(load_json(path, report), ".cursor-plugin/plugin.json", report)
+    label = ".claude-plugin/plugin.json"
+    data = require_object(load_json(ROOT / ".claude-plugin" / "plugin.json", report), label, report)
     if data is None:
         return None
-    unknown_keys(data, PLUGIN_KEYS, ".cursor-plugin/plugin.json", report)
+    unknown_keys(data, PLUGIN_KEYS, label, report)
     if "name" not in data:
-        report.error(".cursor-plugin/plugin.json: missing required field name")
+        report.error(f"{label}: missing required field name")
     else:
-        check_name(data["name"], ".cursor-plugin/plugin.json name", report)
+        check_name(data["name"], f"{label} name", report)
     version = data.get("version")
     if version is not None and (not isinstance(version, str) or SEMVER.fullmatch(version) is None):
-        report.error(".cursor-plugin/plugin.json version: expected semantic version X.Y.Z")
-    author = data.get("author")
-    if author is not None:
-        author_object = require_object(author, ".cursor-plugin/plugin.json author", report)
-        if author_object is not None:
-            unknown_keys(author_object, {"name", "email"}, ".cursor-plugin/plugin.json author", report)
-            if not isinstance(author_object.get("name"), str) or not author_object["name"].strip():
-                report.error(".cursor-plugin/plugin.json author: missing required field name")
-    for field in ("homepage", "repository"):
+        report.error(f"{label} version: expected semantic version X.Y.Z")
+    if "author" in data:
+        check_author(data["author"], f"{label} author", report)
+    for field in ("homepage", "repository", "privacyPolicyUrl"):
         if field in data:
-            check_https_url(data[field], f".cursor-plugin/plugin.json {field}", report)
+            check_https_url(data[field], f"{label} {field}", report)
     if "keywords" in data:
         keywords = data["keywords"]
         if not isinstance(keywords, list) or not all(isinstance(item, str) and item for item in keywords):
-            report.error(".cursor-plugin/plugin.json keywords: expected an array of strings")
-    for field in ("logo", "skills", "commands", "agents", "rules", "mcpServers"):
-        if field not in data:
+            report.error(f"{label} keywords: expected an array of strings")
+    for field in PATH_FIELDS:
+        value = data.get(field)
+        if value is None or isinstance(value, dict):
             continue
-        value = data[field]
         values = value if isinstance(value, list) else [value]
-        if isinstance(value, list) and not value:
-            report.error(f".cursor-plugin/plugin.json {field}: expected at least one path")
         for index, item in enumerate(values):
-            label = f".cursor-plugin/plugin.json {field}" if not isinstance(value, list) else (
-                f".cursor-plugin/plugin.json {field}[{index}]"
-            )
-            if not isinstance(item, str):
-                report.error(f"{label}: expected a path")
-                continue
-            if any(char in item for char in "*?["):
-                matches = list(ROOT.glob(item))
-                if not matches:
-                    report.error(f"{label}: {item} matched no files")
-                continue
-            safe_relative(item, label, report)
+            item_label = f"{label} {field}" if not isinstance(value, list) else f"{label} {field}[{index}]"
+            safe_relative(item, item_label, report)
     return data
 
 
 def validate_marketplace(report: Report) -> None:
-    path_label = ".cursor-plugin/marketplace.json"
-    data = require_object(load_json(ROOT / ".cursor-plugin" / "marketplace.json", report), path_label, report)
+    label = ".claude-plugin/marketplace.json"
+    data = require_object(load_json(ROOT / ".claude-plugin" / "marketplace.json", report), label, report)
     if data is None:
         return
-    unknown_keys(data, MARKETPLACE_KEYS, path_label, report)
+    unknown_keys(data, MARKETPLACE_KEYS, label, report)
     for field in ("name", "owner", "plugins"):
         if field not in data:
-            report.error(f"{path_label}: missing required field {field}")
+            report.error(f"{label}: missing required field {field}")
     if "name" in data:
-        check_name(data["name"], f"{path_label} name", report)
-    owner = data.get("owner")
-    if owner is not None:
-        owner_object = require_object(owner, f"{path_label} owner", report)
-        if owner_object is not None:
-            unknown_keys(owner_object, {"name", "email"}, f"{path_label} owner", report)
-            if not isinstance(owner_object.get("name"), str) or not owner_object["name"].strip():
-                report.error(f"{path_label} owner: missing required field name")
-    metadata = data.get("metadata")
-    if metadata is not None:
-        metadata_object = require_object(metadata, f"{path_label} metadata", report)
-        description = None if metadata_object is None else metadata_object.get("description")
-        if description is not None and not isinstance(description, str):
-            report.error(f"{path_label} metadata.description: expected a string")
+        check_name(data["name"], f"{label} name", report)
+    if "owner" in data:
+        check_author(data["owner"], f"{label} owner", report)
     plugins = data.get("plugins")
     if not isinstance(plugins, list):
         return
     if not plugins:
-        report.error(f"{path_label}: plugins must list at least one plugin")
+        report.error(f"{label}: plugins must list at least one plugin")
         return
     seen: set[str] = set()
     for index, entry in enumerate(plugins):
-        label = f"{path_label} plugins[{index}]"
-        entry_object = require_object(entry, label, report)
+        entry_label = f"{label} plugins[{index}]"
+        entry_object = require_object(entry, entry_label, report)
         if entry_object is None:
             continue
-        unknown_keys(entry_object, PLUGIN_ENTRY_KEYS, label, report)
+        unknown_keys(entry_object, PLUGIN_ENTRY_KEYS, entry_label, report)
         for field in ("name", "source"):
             if field not in entry_object:
-                report.error(f"{label}: missing required field {field}")
+                report.error(f"{entry_label}: missing required field {field}")
         name = entry_object.get("name")
         if "name" in entry_object:
-            check_name(name, f"{label} name", report)
+            check_name(name, f"{entry_label} name", report)
             if isinstance(name, str):
                 if name in seen:
-                    report.error(f"{label}: duplicate plugin name {name}")
+                    report.error(f"{entry_label}: duplicate plugin name {name}")
                 seen.add(name)
         source = entry_object.get("source")
-        if not isinstance(source, str) or not source.strip():
+        if not isinstance(source, str):
             continue
-        if "://" in source:
-            check_https_url(source, f"{label} source", report)
-            continue
-        located = safe_relative(source, f"{label} source", report)
+        located = safe_relative(source, f"{entry_label} source", report)
         if located is None:
             continue
-        manifest = located / ".cursor-plugin" / "plugin.json"
+        manifest = located / ".claude-plugin" / "plugin.json"
         if not manifest.is_file():
-            report.error(f"{label}: {source} has no .cursor-plugin/plugin.json")
+            report.error(f"{entry_label}: {source} has no .claude-plugin/plugin.json")
             continue
         manifest_data = load_json(manifest, report)
         manifest_name = manifest_data.get("name") if isinstance(manifest_data, dict) else None
         if isinstance(name, str) and manifest_name != name:
             display = manifest.relative_to(ROOT).as_posix()
-            report.error(f"{label}: name {name!r} does not match {display} name {manifest_name!r}")
+            report.error(f"{entry_label}: name {name!r} does not match {display} name {manifest_name!r}")
 
 
 def production_url_problem(value: str) -> str | None:
@@ -279,84 +275,39 @@ def production_url_problem(value: str) -> str | None:
     return None
 
 
-def resolved_mcp_url_problem(value: object, variables: object) -> str | None:
-    """Reject a server URL whose published default is not production.
+def resolved_mcp_url_problem(value: object) -> str | None:
+    """Reject a server URL whose default is not production.
 
-    A literal URL has to be the production MCP URL. A ``${VAR}`` placeholder is
-    allowed only when that variable is optional and substituting its default
-    produces ``https://pokitnote.com/mcp`` with no trailing slash. Users then
-    leave the setting unset. A trailing slash on that default breaks Authenticate.
+    A literal URL has to be the production MCP URL. A placeholder must be
+    ``${VAR:-default}``, and substituting every default has to produce
+    ``https://pokitnote.com/mcp`` with no trailing slash, so people who never
+    set the variable get production. A trailing slash breaks sign-in.
     """
     if not isinstance(value, str) or not value.strip():
         return "expected a URL"
-    names = PLACEHOLDER.findall(value)
-    if not names:
-        return production_url_problem(value)
-    if not isinstance(variables, dict) or variables.get("type") != "object":
-        return "plugin variables must declare defaults for the server URL"
-    properties = variables.get("properties")
-    if not isinstance(properties, dict):
-        return "plugin variables.properties must be an object"
-    required = variables.get("required", [])
-    if not isinstance(required, list):
-        return "plugin variables.required must be an array"
-    resolved = value
     problems: list[str] = []
-    for name in names:
-        if name in required:
-            problems.append(f"${{{name}}} must be optional so normal use does not need a value")
-        prop = properties.get(name)
-        if not isinstance(prop, dict):
-            problems.append(f"${{{name}}} is not declared in plugin variables")
-            continue
-        default = prop.get("default")
-        if not isinstance(default, str) or not default.strip() or PLACEHOLDER.search(default):
+
+    def substitute(match: re.Match[str]) -> str:
+        name, default = match.group(1), match.group(2)
+        if default is None:
             problems.append(
-                f"${{{name}}} needs a literal default of {PRODUCTION_MCP_URL} so users do not have to set it"
+                f"${{{name}}} needs a default, written ${{{name}:-{PRODUCTION_MCP_URL}}}, "
+                "so the connector loads when the variable is unset"
             )
-            continue
-        resolved = resolved.replace("${" + name + "}", default, 1)
+            return ""
+        return default
+
+    resolved = PLACEHOLDER.sub(substitute, value)
     if problems:
         return "; ".join(problems)
+    if "${" in resolved or "$" in resolved:
+        return "server URL has a placeholder this check cannot read"
     if resolved != PRODUCTION_MCP_URL:
         host_problem = production_url_problem(resolved)
         if host_problem:
             return host_problem
         return f"with defaults applied, the server URL must be {PRODUCTION_MCP_URL}"
     return None
-
-
-def check_production_url(value: object, label: str, report: Report, variables: object = None) -> None:
-    problem = resolved_mcp_url_problem(value, variables)
-    if problem:
-        report.error(f"{label}: {problem}")
-
-
-def check_variable_defaults(variables: object, report: Report) -> None:
-    if variables is None:
-        return
-    label = ".cursor-plugin/plugin.json variables"
-    if not isinstance(variables, dict):
-        report.error(f"{label}: expected a JSON object")
-        return
-    if variables.get("type") != "object":
-        report.error(f"{label}: type must be object")
-    properties = variables.get("properties")
-    if properties is None:
-        return
-    if not isinstance(properties, dict):
-        report.error(f"{label}.properties: expected a JSON object")
-        return
-    for name, prop in properties.items():
-        prop_label = f"{label}.properties.{name}"
-        if not isinstance(prop, dict):
-            report.error(f"{prop_label}: expected a JSON object")
-            continue
-        default = prop.get("default")
-        if isinstance(default, str) and "://" in default:
-            problem = production_url_problem(default)
-            if problem:
-                report.error(f"{prop_label} default: {problem}")
 
 
 def reject_secrets(value: object, label: str, report: Report) -> None:
@@ -370,42 +321,42 @@ def reject_secrets(value: object, label: str, report: Report) -> None:
             reject_secrets(item, f"{label}[{index}]", report)
 
 
-def validate_mcp(report: Report, variables: object = None) -> None:
-    label = "mcp.json"
-    data = require_object(load_json(ROOT / "mcp.json", report), label, report)
+def validate_mcp(report: Report) -> None:
+    label = ".mcp.json"
+    data = require_object(load_json(ROOT / ".mcp.json", report), label, report)
     if data is None:
         return
-    unknown_keys(data, {"mcpServers"}, label, report)
-    servers = data.get("mcpServers")
-    if not isinstance(servers, dict) or not servers:
-        report.error(f"{label}: missing required field mcpServers")
+    if not data:
+        report.error(f"{label}: expected at least one server")
         return
-    for name, server in servers.items():
-        server_label = f"{label} mcpServers.{name}"
-        if not isinstance(name, str) or not name.strip():
-            report.error(f"{label}: server name must be a non-empty string")
+    if "mcpServers" in data:
+        report.error(f"{label}: list servers at the top level, as Claude Code plugins do, not under mcpServers")
+        return
+    for name, server in data.items():
+        server_label = f"{label} {name}"
         server_object = require_object(server, server_label, report)
         if server_object is None:
             continue
+        unknown_keys(server_object, MCP_SERVER_KEYS, server_label, report)
+        if server_object.get("type") != "http":
+            report.error(f"{server_label}: type must be http")
         if "url" not in server_object:
             report.error(f"{server_label}: missing required field url")
         else:
-            check_production_url(server_object["url"], f"{server_label} url", report, variables)
-        if server_object.get("type") != "http":
-            report.error(f"{server_label}: type must be http")
-        for field in ("command", "args"):
-            if field in server_object:
-                report.error(f"{server_label}: {field} is not used by the remote server")
-        auth = server_object.get("auth")
-        if not isinstance(auth, dict):
-            report.error(f"{server_label}: missing required field auth")
-        else:
-            client_id = auth.get("CLIENT_ID")
-            if not isinstance(client_id, str) or not client_id.strip():
-                report.error(f"{server_label} auth: missing required field CLIENT_ID")
-            scopes = auth.get("scopes")
-            if not isinstance(scopes, list) or not scopes or not all(isinstance(item, str) and item for item in scopes):
-                report.error(f"{server_label} auth: missing required field scopes")
+            problem = resolved_mcp_url_problem(server_object["url"])
+            if problem:
+                report.error(f"{server_label} url: {problem}")
+        oauth = server_object.get("oauth")
+        if oauth is not None:
+            oauth_object = require_object(oauth, f"{server_label} oauth", report)
+            if oauth_object is not None:
+                # Claude registers its own client (CIMD or DCR); a fixed
+                # client id such as Cursor's grok-bot would not have Claude's
+                # redirect URIs.
+                unknown_keys(oauth_object, OAUTH_KEYS, f"{server_label} oauth", report)
+                scopes = oauth_object.get("scopes")
+                if not isinstance(scopes, str) or not scopes.strip():
+                    report.error(f"{server_label} oauth scopes: expected a space-separated string")
         reject_secrets(server_object, server_label, report)
 
 
@@ -473,14 +424,25 @@ def validate_skills(report: Report) -> None:
             report.error(f"{display}: description must not be empty")
 
 
+def validate_commands(report: Report) -> None:
+    for path in sorted((ROOT / "commands").glob("*.md")):
+        display = path.relative_to(ROOT).as_posix()
+        fields = parse_frontmatter(path, report)
+        if fields is None:
+            continue
+        if not fields.get("description", "").strip():
+            report.error(f"{display}: missing frontmatter field description")
+
+
 def main() -> None:
     report = Report()
-    plugin = validate_plugin(report)
+    if (ROOT / ".cursor-plugin").exists() or (ROOT / "mcp.json").exists():
+        report.error(".cursor-plugin/ and mcp.json are Cursor files; this repository ships the Claude plugin")
+    validate_plugin(report)
     validate_marketplace(report)
-    variables = plugin.get("variables") if isinstance(plugin, dict) else None
-    check_variable_defaults(variables, report)
-    validate_mcp(report, variables)
+    validate_mcp(report)
     validate_skills(report)
+    validate_commands(report)
     report.finish()
 
 
