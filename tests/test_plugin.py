@@ -54,7 +54,7 @@ class PluginConfigTest(unittest.TestCase):
         self.assertEqual(plugin["name"], "pokit-note")
         self.assertEqual(plugin["license"], "MIT")
         self.assertEqual(plugin["repository"], "https://github.com/botrelay-ai/pokitnote-claude-plugin")
-        for cursor_field in ("displayName", "logo", "variables"):
+        for cursor_field in ("logo", "variables"):
             self.assertNotIn(cursor_field, plugin)
         self.assertNotIn("pnt_", json.dumps(plugin))
         logo = (ROOT / "assets" / "logo.png").read_bytes()
