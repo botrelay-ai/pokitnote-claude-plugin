@@ -13,7 +13,7 @@ Pokit Note starts a Claude routine run when the person shares a web page or phot
 
 A Claude routine runs in the cloud and uses the connectors on the person's Claude account, not the plugin installed in Claude Code. Walk the person through these steps when they ask to set this up. You cannot create the routine or its token for them.
 
-1. Connect Pokit Note to the Claude account: in the Claude app, open Settings, then Connectors, and add a custom connector with the URL https://pokitnote.com/mcp (no trailing slash). Sign in to Pokit Note and allow access.
+1. Connect Pokit Note to the Claude account: in the Claude app, open Settings, then Connectors, and add a custom connector with the URL https://stage.pokitnote.com/mcp (no trailing slash). Sign in to Pokit Note and allow access.
 2. Create a routine at claude.ai/code/routines. Paste the contents of `routine-prompt.md` from this plugin as its prompt, and include the Pokit Note connector.
 3. Under the routine's triggers, add an API trigger and generate a token. Copy the URL and the token. The token is shown only once.
 4. In the Pokit Note app, open Account, then Connected Assistant, and choose Claude. Paste the URL and the token only into that screen, and save. Never repeat the token, put it in a note or list, or send it anywhere else. Tap Send Test to check it.

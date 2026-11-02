@@ -27,7 +27,7 @@ Pokit Note is currently only available for iPhone, and only in the US. Android s
 
 ## Use Pokit Note in the Claude App
 
-To use Pokit Note in Claude on the web, the desktop app, or the iPhone app, add it as a connector. Open **Settings**, then **Connectors**, choose **Add custom connector**, and enter `https://pokitnote.com/mcp`. Then choose **Connect**, sign in to Pokit Note, and choose **Approve**.
+To use Pokit Note in Claude on the web, the desktop app, or the iPhone app, add it as a connector. Open **Settings**, then **Connectors**, choose **Add custom connector**, and enter `https://stage.pokitnote.com/mcp`. Then choose **Connect**, sign in to Pokit Note, and choose **Approve**.
 
 The connector is also what lets Claude handle what you share from your phone, below.
 
@@ -46,7 +46,7 @@ A routine accepts up to 30 runs an hour, and your account up to 100, and each ru
 
 ## Address
 
-The connector always uses https://pokitnote.com/mcp, with no trailing slash.
+The connector always uses https://stage.pokitnote.com/mcp, with no trailing slash.
 
 ## Subscription
 

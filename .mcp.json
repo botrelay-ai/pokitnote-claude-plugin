@@ -1,7 +1,7 @@
 {
   "pokitnote": {
     "type": "http",
-    "url": "https://pokitnote.com/mcp",
+    "url": "https://stage.pokitnote.com/mcp",
     "oauth": {
       "scopes": "notes",
       "clientId": "claude"

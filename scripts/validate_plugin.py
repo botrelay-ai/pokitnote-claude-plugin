@@ -78,7 +78,7 @@ SECRET_KEYS = {
     "authorization",
 }
 PRODUCTION_HOST = "pokitnote.com"
-PRODUCTION_MCP_URL = "https://pokitnote.com/mcp"
+PRODUCTION_MCP_URL = "https://stage.pokitnote.com/mcp"
 # ${VAR} or ${VAR:-default}. A bare ${VAR} with no default fails to load when
 # the variable is unset, so the server URL must always carry a default.
 PLACEHOLDER = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*)(?::-([^}]*))?\}")
@@ -282,7 +282,7 @@ def resolved_mcp_url_problem(value: object) -> str | None:
 
     A literal URL has to be the production MCP URL. A placeholder must be
     ``${VAR:-default}``, and substituting every default has to produce
-    ``https://pokitnote.com/mcp`` with no trailing slash, so people who never
+    ``https://stage.pokitnote.com/mcp`` with no trailing slash, so people who never
     set the variable get production. A trailing slash breaks sign-in.
     """
     if not isinstance(value, str) or not value.strip():

@@ -28,8 +28,8 @@ On the consent screen, show the redirect URI's host clearly.
 
 ### Discovery
 
-- Answer an unauthenticated request to `https://pokitnote.com/mcp` with **`401`**, not `200`, and `WWW-Authenticate: Bearer resource_metadata="<protected resource metadata URL>", scope="notes"`.
-- In the protected resource metadata, `resource` must be exactly `https://pokitnote.com/mcp`, with no trailing slash, and `authorization_servers` must list the issuer first.
+- Answer an unauthenticated request to `https://stage.pokitnote.com/mcp` with **`401`**, not `200`, and `WWW-Authenticate: Bearer resource_metadata="<protected resource metadata URL>", scope="notes"`.
+- In the protected resource metadata, `resource` must be exactly `https://stage.pokitnote.com/mcp`, with no trailing slash, and `authorization_servers` must list the issuer first.
 - Serve authorization server metadata at the issuer's `/.well-known/oauth-authorization-server` or `/.well-known/openid-configuration`. Claude Code also probes `/.well-known/oauth-protected-resource/mcp` and `/.well-known/oauth-protected-resource` on the MCP host.
 
 The plugin's `.mcp.json` also requests scope `notes`, so Claude Code asks for it even if the server does not advertise it. Claude on the web uses the `scope` in the `401` or `scopes_supported`.

@@ -32,7 +32,7 @@ class PluginConfigTest(unittest.TestCase):
         self.assertNotIn("command", server)
         self.assertNotIn("args", server)
         self.assertNotIn("headers", server)
-        self.assertEqual(server["url"], "https://pokitnote.com/mcp")
+        self.assertEqual(server["url"], "https://stage.pokitnote.com/mcp")
         self.assertEqual(server["oauth"], {"scopes": "notes", "clientId": "claude"})
         text = json.dumps(raw)
         self.assertNotIn("grok-bot", text)
@@ -85,18 +85,18 @@ class PluginConfigTest(unittest.TestCase):
     def test_address_override_cannot_ship_a_non_production_default(self):
         validate = load_script("validate_plugin")
         check = validate.resolved_mcp_url_problem
-        self.assertIsNone(check("${POKITNOTE_API_BASE:-https://pokitnote.com/mcp}"))
-        self.assertIsNone(check("https://pokitnote.com/mcp"))
-        self.assertIsNotNone(check("https://pokitnote.com/mcp/"))
-        self.assertIsNotNone(check("${POKITNOTE_API_BASE:-https://pokitnote.com/mcp/}"))
+        self.assertIsNone(check("${POKITNOTE_API_BASE:-https://stage.pokitnote.com/mcp}"))
+        self.assertIsNone(check("https://stage.pokitnote.com/mcp"))
+        self.assertIsNotNone(check("https://stage.pokitnote.com/mcp/"))
+        self.assertIsNotNone(check("${POKITNOTE_API_BASE:-https://stage.pokitnote.com/mcp/}"))
         self.assertIsNotNone(check("${POKITNOTE_API_BASE}"), "a bare variable fails when unset")
         for url in ("https://stage.pokitnote.com/mcp", "https://api.pokitnote.com/mcp"):
             self.assertIsNotNone(check(url), url)
             self.assertIsNotNone(check("${POKITNOTE_API_BASE:-" + url + "}"), url)
         for relative in ("skills/pokit-note/SKILL.md", "README.md"):
             text = read(relative)
-            self.assertIn("https://pokitnote.com/mcp", text)
-            self.assertNotIn("https://pokitnote.com/mcp/", text)
+            self.assertIn("https://stage.pokitnote.com/mcp", text)
+            self.assertNotIn("https://stage.pokitnote.com/mcp/", text)
             self.assertIn("no trailing slash", text)
             self.assertNotIn("POKITNOTE_API_BASE", text)
 

@@ -68,4 +68,4 @@ Set these only when the person asks, or when their request clearly includes them
 ## Connection
 
 - Do not ask for, copy, or replace the key saved by the Pokit Note app on the iPhone.
-- The connector always uses https://pokitnote.com/mcp, with no trailing slash.
+- The connector always uses https://stage.pokitnote.com/mcp, with no trailing slash.
