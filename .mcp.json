@@ -1,9 +1,6 @@
 {
   "pokitnote": {
     "type": "http",
-    "url": "https://pokitnote.com/mcp",
-    "oauth": {
-      "scopes": "notes"
-    }
+    "url": "https://pokitnote.com/mcp"
   }
 }
