@@ -26,7 +26,7 @@ This routine will be called whenever you want to share an image, text, or URL wi
 2. Under Code click Scheduled to set up a routine task.
 3. Click New Task on the right and choose Set up manually.
 4. Enter Pokit Note Connector for the Name
-5. Copy and paste the following instruction text into the Instruction text box:
+5. Copy the instruction text found in [docs/routine-prompt.md](https://github.com/botrelay-ai/pokitnote-claude-plugin/blob/main/docs/routine-prompt.md) and paste it into the Instruction text box.
 6. Set the Trigger to API.
 7. Click Save and copy the generated API key.
 
