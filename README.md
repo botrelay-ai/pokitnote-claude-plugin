@@ -18,7 +18,7 @@ Pokit Note is currently only available for iPhone, and only in the US. Android s
 1. After the Pokit Note plugin is added, click on it to open its settings.
 2. Click on the Connectors tab.
 3. Click the Connect button.
-4. If prompted to verify the Pokit Note server (https://pokitnote.com/mcp), click Continue. And if prompted, set the Authentication method to 'Sign in now' and the OAuth client to 'Use Claude's published identity', and click Add. On the pokitnote.com website, log into your account and click the Approve button to give Claude full access to your notes, lists and recipes.
+4. If prompted to verify the Pokit Note server (https://pokitnote.com/mcp), click Continue. And if prompted, set the Authentication method to _Sign in now_ and the OAuth client to _Use Claude's published identity_, and click _Add_. On the pokitnote.com website, log into your account and click the Approve button to give Claude full access to your notes, lists and recipes.
 
 ## Create a Cloud Routine
 This routine will be called whenever you want to share an image, text, or URL with Claude and have it create a note, list, or recipe in Pokit Note.
